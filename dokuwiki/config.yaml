@@ -15,7 +15,7 @@ ingress_port: 8080
 
 # Only show it to HA admins
 panel_admin: true
-
+panel_title: "DokuWiki"
 panel_icon: mdi:book-open-page-variant
 map:
   - share:rw
