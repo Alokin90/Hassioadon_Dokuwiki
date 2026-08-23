@@ -13,6 +13,8 @@ RUN apk add --no-cache \
     php83-dom \
     php83-simplexml \
     php83-mbstring \
+    php83-phar \
+    php83-posix \
     php83-openssl \
     php83-ctype \
     php83-zip \
@@ -30,7 +32,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 
 # 3. Download and extract DokuWiki
-RUN wget -q https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz -O /tmp/dokuwiki.tgz \
+RUN wget -q https://github.com/dokuwiki/dokuwiki/releases/download/release-2026-07-14b/dokuwiki-2026-07-14b.tgz -O /tmp/dokuwiki.tgz \
     && mkdir -p /var/www/dokuwiki \
     && tar -xzf /tmp/dokuwiki.tgz -C /var/www/dokuwiki --strip-components=1 \
     && rm /tmp/dokuwiki.tgz \

@@ -18,6 +18,12 @@ if [ ! -f "$STORAGE_DIR/conf/dokuwiki.php" ]; then
     cp -r /var/www/dokuwiki.dist/conf/* "$STORAGE_DIR/conf/"
 fi
 
+# 3b. Warn if the setup wizard hasn't been run yet
+if [ ! -f "$STORAGE_DIR/conf/local.php" ]; then
+    echo "No DokuWiki configuration found."
+    echo "Please open this add-on's Web UI and navigate to /install.php to complete setup."
+fi
+
 # 4. Sync Templates and Plugins (if empty)
 [ ! -d "$STORAGE_DIR/tpl/dokuwiki" ] && cp -r /var/www/dokuwiki.dist/lib/tpl/dokuwiki "$STORAGE_DIR/tpl/"
 [ ! -d "$STORAGE_DIR/plugins/config" ] && cp -r /var/www/dokuwiki.dist/lib/plugins/* "$STORAGE_DIR/plugins/"
@@ -31,21 +37,16 @@ ln -sf "$STORAGE_DIR/conf" /var/www/dokuwiki/conf
 ln -sf "$STORAGE_DIR/tpl" /var/www/dokuwiki/lib/tpl
 ln -sf "$STORAGE_DIR/plugins" /var/www/dokuwiki/lib/plugins
 
-# 6. THE INGRESS FIX
-# We tell DokuWiki to detect the Ingress path provided by the Home Assistant header
-# This prevents broken CSS and 404s on images.
-LOCAL_CONF="$STORAGE_DIR/conf/local.php"
-if [ ! -f "$LOCAL_CONF" ]; then
-    echo "<?php" > "$LOCAL_CONF"
-fi
-
-# Use sed to ensure basedir is set to the Ingress path header
-# This allows DokuWiki to resolve paths correctly through the proxy
-if ! grep -q "HTTP_X_INGRESS_PATH" "$LOCAL_CONF"; then
-    echo "Adding Ingress path logic to local.php..."
-    cat <<EOF >> "$LOCAL_CONF"
-if (isset(\$_SERVER['HTTP_X_INGRESS_PATH'])) {
-    \$conf['basedir'] = \$_SERVER['HTTP_X_INGRESS_PATH'] . '/';
+# 6. INGRESS FIX
+# Use local.protected.php so this survives install.php and the Config Manager,
+# both of which only ever write to local.php.
+PROTECTED_CONF="$STORAGE_DIR/conf/local.protected.php"
+if [ ! -f "$PROTECTED_CONF" ]; then
+    echo "Adding Ingress path logic to local.protected.php..."
+    cat <<'EOF' > "$PROTECTED_CONF"
+<?php
+if (isset($_SERVER['HTTP_X_INGRESS_PATH'])) {
+    $conf['basedir'] = $_SERVER['HTTP_X_INGRESS_PATH'] . '/';
 }
 EOF
 fi
