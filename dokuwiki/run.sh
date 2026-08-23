@@ -42,12 +42,13 @@ ln -sf "$STORAGE_DIR/plugins" /var/www/dokuwiki/lib/plugins
 # both of which only ever write to local.php.
 PROTECTED_CONF="$STORAGE_DIR/conf/local.protected.php"
 if [ ! -f "$PROTECTED_CONF" ]; then
-    echo "Adding Ingress path logic to local.protected.php..."
+    echo "Adding Ingress path logic and syntax mode fix to local.protected.php..."
     cat <<'EOF' > "$PROTECTED_CONF"
 <?php
 if (isset($_SERVER['HTTP_X_INGRESS_PATH'])) {
     $conf['basedir'] = $_SERVER['HTTP_X_INGRESS_PATH'] . '/';
 }
+$conf['syntax'] = 'dw+md';
 EOF
 fi
 
